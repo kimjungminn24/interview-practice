@@ -1,11 +1,16 @@
 // 여러 화면에서 같이 쓰는 카드/모달
 import { state, byId, upsert } from '../store.js';
-import { esc, nl2br, openModal, closeModal, toast, typeLabel, splitTags, CATEGORIES, withLoading } from '../ui.js';
+import { esc, nl2br, openModal, closeModal, toast, typeLabel, splitTags, CATEGORIES, withLoading, icon } from '../ui.js';
 import * as ai from '../ai.js';
 
 // ---------- 경험 카드 ----------
 export function experienceDetailHtml(e) {
-  const row = (label, v) => (v ? `<div class="star"><span class="star-k">${label}</span><div>${nl2br(v)}</div></div>` : '');
+  const row = (label, v) => {
+    if (!v) return '';
+    const m = /^([A-Z]) (.+)$/.exec(label);
+    const [k, name] = m ? [m[1], m[2]] : ['', label];
+    return `<div class="star"><span class="star-k" aria-hidden="true">${k}</span><div><span class="lbl-sm">${name}</span>${nl2br(v)}</div></div>`;
+  };
   return `
     <article class="exp-detail">
       <header>
@@ -26,7 +31,7 @@ export const tagsHtml = (tags) => (tags?.length ? `<div class="tags">${tags.map(
 export function openExperienceForm(exp, onSaved) {
   const e = exp || {};
   const body = openModal({
-    title: exp ? '경험 카드 수정' : '경험 카드 추가',
+    title: exp ? '경험 수정' : '경험 적기',
     wide: true,
     body: `
       <form class="form" id="exp-form">
@@ -36,7 +41,7 @@ export function openExperienceForm(exp, onSaved) {
           <label>역할/소속<input name="role" value="${esc(e.role)}" placeholder="백엔드 개발 (4인 팀 프로젝트)"></label>
         </div>
         <label>키워드 (쉼표로 구분)<input name="tags" value="${esc((e.tags || []).join(', '))}" placeholder="Spring, Redis, 캐싱, 협업"></label>
-        <label>S · 상황<textarea name="situation" rows="3" placeholder="어떤 상황/배경이었나요?">${esc(e.situation)}</textarea></label>
+        <label>S · 상황<textarea name="situation" rows="3" placeholder="언제, 어떤 상황이었는지">${esc(e.situation)}</textarea></label>
         <label>T · 과제<textarea name="task" rows="2" placeholder="해결해야 했던 문제나 목표">${esc(e.task)}</textarea></label>
         <label>A · 행동<textarea name="action" rows="4" placeholder="내가 구체적으로 한 일 (기술 선택 이유 포함)">${esc(e.action)}</textarea></label>
         <label>R · 결과<textarea name="result" rows="3" placeholder="수치로 표현된 결과">${esc(e.result)}</textarea></label>
@@ -50,7 +55,7 @@ export function openExperienceForm(exp, onSaved) {
     const fd = Object.fromEntries(new FormData(ev.target));
     const saved = upsert('experiences', { ...e, ...fd, title: fd.title.trim(), tags: splitTags(fd.tags) });
     closeModal();
-    toast('경험 카드를 저장했어요.', 'success');
+    toast('저장했습니다.');
     onSaved?.(saved);
   };
 }
@@ -103,7 +108,7 @@ export function openQuestionForm(question, onSaved) {
       category: fd.category.trim(),
     });
     closeModal();
-    toast('질문을 저장했어요.', 'success');
+    toast('저장했습니다.');
     onSaved?.(saved);
   };
 }
@@ -128,7 +133,7 @@ export function relevance(question, exp) {
   return score;
 }
 
-/** "보기" — 질문에 연결된 경험 카드 보여주기 */
+/** "보기": 질문에 연결된 경험 보여주기 */
 export function openLinkedView(questionId, onChange) {
   const q = byId('questions', questionId);
   if (!q) return;
@@ -145,16 +150,16 @@ export function openLinkedView(questionId, onChange) {
     wide: true,
     body: `
       <div class="q-meta"><span class="badge ${q.type}">${typeLabel(q.type)}</span>${q.category ? `<span class="tag">${esc(q.category)}</span>` : ''}</div>
-      <h4 class="sec-title">연결된 경험 카드 (${exps.length})</h4>
-      ${exps.length ? `<div class="stack">${exps.map(experienceDetailHtml).join('')}</div>` : '<p class="empty">아직 연결된 경험이 없어요. 이 질문에 답할 때 쓸 경험을 연결해 보세요.</p>'}
+      <h4 class="sec-title">연결된 경험 ${exps.length}</h4>
+      ${exps.length ? `<div class="stack">${exps.map(experienceDetailHtml).join('')}</div>` : `<div class="empty"><p>연결된 경험이 없습니다.</p>${state.experiences.length ? '<button class="btn ghost" data-edit-links>경험 연결</button>' : ''}</div>`}
       ${
         suggestions.length
-          ? `<h4 class="sec-title">추천 경험</h4><div class="suggest">${suggestions
-              .map((x) => `<button class="chip" data-link="${x.e.id}">+ ${esc(x.e.title)}</button>`)
+          ? `<h4 class="sec-title">추천</h4><div class="suggest">${suggestions
+              .map((x) => `<button class="chip" data-link="${x.e.id}">${icon('plus', { size: 14 })} ${esc(x.e.title)}</button>`)
               .join('')}</div>`
           : ''
       }
-      <div class="actions"><button class="btn" data-edit-links>🔗 연결 편집</button></div>`,
+      <div class="actions"><button class="btn" data-edit-links>연결 바꾸기</button></div>`,
   });
   body.querySelectorAll('[data-link]').forEach((b) => {
     b.onclick = () => {
@@ -164,11 +169,13 @@ export function openLinkedView(questionId, onChange) {
       openLinkedView(questionId, onChange);
     };
   });
-  body.querySelector('[data-edit-links]').onclick = () =>
-    openLinkEditor(questionId, () => {
-      onChange?.();
-      openLinkedView(questionId, onChange);
-    });
+  body.querySelectorAll('[data-edit-links]').forEach((b) => {
+    b.onclick = () =>
+      openLinkEditor(questionId, () => {
+        onChange?.();
+        openLinkedView(questionId, onChange);
+      });
+  });
 }
 
 /** 질문 ↔ 경험 연결 편집 */
@@ -187,11 +194,11 @@ export function openLinkEditor(questionId, onDone) {
                 ({ e, s }) => `
             <label class="check-item">
               <input type="checkbox" value="${e.id}" ${linked.has(e.id) ? 'checked' : ''}>
-              <span><b>${esc(e.title)}</b>${s > 0 ? ` <span class="tag ai">추천 ${s}</span>` : ''}<br><span class="muted small">${esc((e.tags || []).map((t) => '#' + t).join(' '))}</span></span>
+              <span><b>${esc(e.title)}</b>${s > 0 ? ' <span class="tag">추천</span>' : ''}<br><span class="muted small">${esc((e.tags || []).map((t) => '#' + t).join(' '))}</span></span>
             </label>`
               )
               .join('')}</div>`
-          : '<p class="empty">경험 카드가 없어요. 먼저 경험 카드를 추가하세요.</p>'
+          : '<p class="empty">경험이 없습니다. 경험을 먼저 적어 주세요.</p>'
       }
       <div class="actions"><button class="btn ghost" data-cancel>취소</button><button class="btn primary" data-save>저장</button></div>`,
   });
@@ -204,11 +211,11 @@ export function openLinkEditor(questionId, onDone) {
   };
 }
 
-/** 경험 카드 → AI 면접 질문 카드 생성 */
+/** 경험 → 면접 질문 뽑기 */
 export function openCardGenerator(expId, onDone) {
   const exp = byId('experiences', expId);
   const body = openModal({
-    title: `면접 카드 생성 · ${exp.title}`,
+    title: `질문 뽑기 · ${exp.title}`,
     wide: true,
     body: `
       <div class="form inline">
@@ -220,7 +227,7 @@ export function openCardGenerator(expId, onDone) {
           </select>
         </label>
         <label>개수<input id="g-count" type="number" min="1" max="15" value="6"></label>
-        <button class="btn primary" id="g-run">🤖 생성</button>
+        <button class="btn primary" id="g-run">뽑기</button>
       </div>
       <div id="g-result"></div>`,
   });
@@ -238,18 +245,26 @@ export function openCardGenerator(expId, onDone) {
         <label class="check-item">
           <input type="checkbox" data-i="${i}" ${exists.has(c.text.trim()) ? '' : 'checked'}>
           <span><span class="badge ${c.type}">${typeLabel(c.type)}</span> <span class="tag">${esc(c.category)}</span>${exists.has(c.text.trim()) ? ' <span class="tag">이미 있음</span>' : ''}<br>
-          <b>${esc(c.text)}</b><br><span class="muted small">의도: ${esc(c.intent)}</span></span>
+          <b>${esc(c.text)}</b><br><span class="muted small">묻는 이유 · ${esc(c.intent)}</span></span>
         </label>`
         )
         .join('')}</div>
-      <div class="actions"><button class="btn primary" id="g-add">선택한 카드 추가</button></div>`;
-    res.querySelector('#g-add').onclick = () => {
+      <div class="actions"><button class="btn primary" id="g-add"></button></div>`;
+    const addBtn = res.querySelector('#g-add');
+    const syncCount = () => {
+      const n = res.querySelectorAll('input:checked').length;
+      addBtn.textContent = `고른 질문 추가 (${n})`;
+      addBtn.disabled = !n;
+    };
+    res.onchange = syncCount;
+    syncCount();
+    addBtn.onclick = () => {
       const picked = [...res.querySelectorAll('input:checked')].map((i) => cards[i.dataset.i]);
       picked.forEach((c) =>
         upsert('questions', { text: c.text, type: c.type, category: c.category, intent: c.intent, experienceIds: [expId], followUps: [], answer: '', source: 'ai' })
       );
       closeModal();
-      toast(`${picked.length}개의 면접 카드를 질문 리스트에 추가했어요.`, 'success');
+      toast(`질문 ${picked.length}개 추가`);
       onDone?.();
     };
   };

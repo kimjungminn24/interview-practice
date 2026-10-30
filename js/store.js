@@ -4,10 +4,10 @@ import { uid } from './ui.js';
 
 const SETTINGS_KEY = 'ip.settings';
 const CACHE_KEY = 'ip.cache';
-const KEYS = ['experiences', 'questions', 'sessions'];
-const KEY_LABEL = { experiences: '경험 카드', questions: '질문', sessions: '연습 기록' };
+export const KEYS = ['experiences', 'questions', 'sessions', 'phrases'];
+const KEY_LABEL = { experiences: '경험', questions: '질문', sessions: '연습 기록', phrases: '멘트' };
 
-export const state = { experiences: [], questions: [], sessions: [] };
+export const state = { experiences: [], questions: [], sessions: [], phrases: [] };
 export const status = { mode: 'local', saving: false, dirty: false, error: null, lastSaved: null };
 
 const shas = {};
@@ -30,6 +30,15 @@ const DEFAULTS = {
   aiBaseUrl: 'https://api.openai.com/v1',
   targetRole: '',
   jobDescription: '',
+  // 말하기 연습
+  prepSec: 10,
+  targetSec: 60,
+  sttMode: 'openai', // 'openai' | 'off'
+  sttModel: 'whisper-1',
+  sttConsent: false,
+  autoTranscribe: false,
+  hideScore: false,
+  ttsRate: 1,
 };
 
 function guessRepo() {
@@ -260,14 +269,49 @@ export function practiceCounts() {
   return m;
 }
 
+// ---------- 멘트 (phrases.json) ----------
+// [{id, situation, text}] 사용자 멘트, [{id:<기본 멘트 id>, hidden:true}] 기본 멘트 숨김 표시
+export function addPhrase(p) {
+  const text = String(p?.text || '').trim();
+  if (!text) return null;
+  const item = { id: p.id || `u-${uid()}`, situation: String(p.situation || '기타').trim() || '기타', text };
+  state.phrases.push(item);
+  markDirty('phrases');
+  return item;
+}
+
+export function removePhrase(id) {
+  state.phrases = state.phrases.filter((p) => p.id !== id);
+  markDirty('phrases');
+}
+
+export function setPhraseHidden(id, hidden) {
+  const cur = state.phrases.find((p) => p.id === id);
+  if (hidden) {
+    if (cur) cur.hidden = true;
+    else state.phrases.push({ id, hidden: true });
+  } else if (cur) {
+    if (cur.text) delete cur.hidden;
+    else state.phrases = state.phrases.filter((p) => p !== cur);
+  }
+  markDirty('phrases');
+}
+
 // ---------- import / export ----------
 export function exportAll() {
-  return { exportedAt: new Date().toISOString(), experiences: state.experiences, questions: state.questions, sessions: state.sessions };
+  return {
+    exportedAt: new Date().toISOString(),
+    experiences: state.experiences,
+    questions: state.questions,
+    sessions: state.sessions,
+    phrases: state.phrases,
+  };
 }
 
 export function importAll(data) {
-  for (const k of KEYS) if (Array.isArray(data[k])) state[k] = data[k];
-  markDirty(...KEYS);
+  const touched = KEYS.filter((k) => Array.isArray(data?.[k]));
+  for (const k of touched) state[k] = data[k];
+  if (touched.length) markDirty(...touched);
 }
 
 export function clearCache() {

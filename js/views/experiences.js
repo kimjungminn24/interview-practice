@@ -10,12 +10,12 @@ export function render(el) {
   const tags = [...new Set(state.experiences.flatMap((e) => e.tags || []))].sort();
   el.innerHTML = `
     <div class="page-head">
-      <h2>경험 카드 <span class="muted">${state.experiences.length}</span></h2>
-      <p class="muted">면접에서 꺼내 쓸 경험을 STAR(상황·과제·행동·결과)로 정리하세요. 경험에서 직무/인성 면접 카드를 바로 만들 수 있어요.</p>
+      <h2>경험 <span class="muted">${state.experiences.length}</span></h2>
+      <p class="muted">면접에서 꺼낼 경험을 상황·과제·행동·결과 순서로 적어 둡니다.</p>
     </div>
     <div class="toolbar">
-      <input type="search" id="e-search" placeholder="경험 검색" value="${esc(f.q)}">
-      <button class="btn primary" data-action="new">+ 경험 추가</button>
+      <input type="search" id="e-search" placeholder="경험 검색" aria-label="경험 검색" value="${esc(f.q)}">
+      <button class="btn primary" data-action="new">경험 적기</button>
     </div>
     ${
       tags.length
@@ -49,7 +49,7 @@ export function render(el) {
       case 'gen':
         return openCardGenerator(id, rerender);
       case 'del':
-        if (confirm('이 경험 카드를 삭제할까요? 연결된 질문에서도 연결이 해제됩니다.')) {
+        if (confirm('이 경험을 삭제할까요? 연결된 질문에서도 빠집니다.')) {
           removeExperience(id);
           rerender();
         }
@@ -83,29 +83,31 @@ function renderList() {
           <div class="muted small">연결된 질문 ${qs.length} (직무 ${job} · 인성 ${qs.length - job})</div>
         </div>
         <div class="card-actions">
-          <button class="btn sm primary" data-action="gen">🤖 면접 카드 생성</button>
+          <button class="btn sm" data-action="gen">질문 뽑기</button>
           <button class="btn sm ghost" data-action="edit">수정</button>
           <button class="btn sm ghost danger" data-action="del">삭제</button>
         </div>
       </div>`;
         })
         .join('')
-    : `<p class="empty">${state.experiences.length ? '조건에 맞는 경험이 없어요.' : '첫 경험 카드를 추가해 보세요!'}</p>`;
+    : state.experiences.length
+      ? '<p class="empty">조건에 맞는 경험이 없습니다.</p>'
+      : '<div class="empty"><p>아직 적어 둔 경험이 없습니다.</p><button class="btn ghost" data-action="new">경험 적기</button></div>';
 }
 
 function openDetail(id) {
   const e = byId('experiences', id);
   const qs = linkedQuestions(id);
   openModal({
-    title: '경험 카드',
+    title: '경험',
     wide: true,
     body: `
       ${experienceDetailHtml(e)}
-      <h4 class="sec-title">이 경험으로 답할 질문 (${qs.length})</h4>
+      <h4 class="sec-title">이 경험으로 답할 질문 ${qs.length}</h4>
       ${
         qs.length
           ? `<ul class="plain">${qs.map((q) => `<li><span class="badge ${q.type}">${typeLabel(q.type)}</span> ${esc(q.text)}</li>`).join('')}</ul>`
-          : '<p class="empty">연결된 질문이 없어요. "면접 카드 생성"으로 질문을 만들어 보세요.</p>'
+          : '<p class="empty">연결된 질문이 없습니다.</p>'
       }`,
   });
 }
