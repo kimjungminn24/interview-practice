@@ -35,9 +35,8 @@ const DEFAULTS = {
 function guessRepo() {
   const { hostname, pathname } = location;
   if (!hostname.endsWith('.github.io')) return {};
-  const owner = hostname.split('.')[0];
-  const repo = pathname.split('/').filter(Boolean)[0] || `${owner}.github.io`;
-  return { ghOwner: owner, ghRepo: repo };
+  // 앱이 올라간 저장소는 public이므로 owner만 채우고, 데이터 저장소는 직접 지정하게 한다
+  return { ghOwner: hostname.split('.')[0] };
 }
 
 export function getSettings() {

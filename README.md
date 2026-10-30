@@ -26,14 +26,21 @@ Source를 `Deploy from a branch`, Branch를 `main` / `/ (root)`로 선택합니�
 > 로컬에서 실행: `python3 -m http.server 8000` 후 http://localhost:8000
 > (ES 모듈을 쓰기 때문에 `index.html`을 파일로 직접 열면 동작하지 않습니다.)
 
-### 2. GitHub 토큰 연결 (데이터 저장)
-1. [Fine-grained personal access token](https://github.com/settings/personal-access-tokens/new) 생성
-   - Repository access: **Only select repositories → interview-practice**
+### 2. 데이터용 private 저장소 연결 (경험이 공개되지 않게)
+무료 GitHub Pages는 public 저장소에서만 동작하므로, **앱 코드(이 저장소, public)와 데이터(별도 private 저장소)를 분리**합니다.
+public 저장소에는 코드와 `(예시)` 샘플만 있고, 내 경험·답변·기록은 private 저장소에만 커밋됩니다.
+
+1. GitHub에서 **private** 저장소를 새로 만듭니다 (예: `interview-data`). *Add a README file*에 체크해 `main` 브랜치를 만들어 주세요.
+2. [Fine-grained personal access token](https://github.com/settings/personal-access-tokens/new) 생성
+   - Repository access: **Only select repositories → interview-data** (데이터 저장소만)
    - Permissions → Repository → **Contents: Read and write**
-2. 앱의 **설정** 탭에서 Owner / Repository / Branch / Token 입력 → "연결 테스트" → "저장 후 다시 불러오기"
+3. 앱의 **설정** 탭에서 Owner / Repository(`interview-data`) / Branch(`main`) / Token 입력 → "연결 테스트" → "저장 후 다시 불러오기"
+   - public 저장소를 지정하면 경고가 뜹니다.
+   - `data/` 폴더와 json 파일은 첫 저장 때 자동으로 만들어집니다.
 
 변경 사항은 4초 뒤 자동으로 커밋됩니다(설정에서 끄고 상단 **저장** 버튼으로 수동 커밋 가능).
 토큰이 없으면 **로컬 모드**로 동작하며 브라우저에만 저장됩니다(설정 → JSON 내보내기로 백업).
+PC·아이폰 등 기기마다 설정 탭에서 토큰/키를 한 번씩 입력하면 같은 데이터를 함께 씁니다.
 
 ### 3. OpenAI 키 연결 (꼬리질문 · 피드백)
 설정 탭에 OpenAI API Key, 모델명(기본 `gpt-4o-mini`, 원하는 모델로 변경 가능), 목표 직무, 채용공고(JD)를 입력하세요.
@@ -43,8 +50,8 @@ JD를 넣으면 질문과 피드백이 해당 회사/직무에 맞춰집니다. 
 
 - 토큰과 API 키는 **브라우저 localStorage에만** 저장되고 저장소에는 커밋되지 않습니다.
 - 공용 PC에서는 사용 후 설정에서 토큰/키를 지워 주세요.
-- 저장소가 **public이면 `data/`의 면접 답변도 공개**됩니다. 공개를 원치 않으면 저장소를 private으로 두세요.
-  (private 저장소의 GitHub Pages는 유료 플랜이 필요하므로, 이 경우 로컬 서버로 실행하거나 public 저장소엔 코드만 두고 데이터 저장소를 별도 private 저장소로 지정하세요 — 설정의 Owner/Repository를 데이터용 저장소로 입력하면 됩니다.)
+- 내 데이터는 **private 데이터 저장소**에만 저장하세요. 토큰도 그 저장소에만 권한을 주면, 토큰이 유출돼도 다른 저장소는 안전합니다.
+- 이 앱 저장소의 `data/`에는 예시 데이터만 두세요.
 
 ## 데이터 구조
 

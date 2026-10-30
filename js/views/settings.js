@@ -11,13 +11,14 @@ export function render(el) {
     </div>
 
     <form class="card pad form" id="s-gh">
-      <h3>GitHub 저장소 (데이터 기록)</h3>
-      <p class="muted small">서버 없이 GitHub API로 <code>${esc(s.dataDir)}/*.json</code> 파일에 직접 커밋합니다.
-        <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">Fine-grained 토큰</a>을 만들고
-        이 저장소만 선택한 뒤 <b>Contents: Read and write</b> 권한을 주세요.</p>
+      <h3>데이터 저장소 (GitHub)</h3>
+      <p class="muted small">경험·답변은 여기 지정한 저장소의 <code>${esc(s.dataDir)}/*.json</code>에 커밋돼요.
+        앱 저장소(public)와 별개로 <b>private 저장소</b>를 하나 만들어 지정하세요. (예: <code>interview-data</code>, README로 초기화)<br>
+        <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">Fine-grained 토큰</a>은
+        그 데이터 저장소만 선택하고 <b>Contents: Read and write</b> 권한을 주세요.</p>
       <div class="grid2">
         <label>Owner<input name="ghOwner" value="${esc(s.ghOwner)}" placeholder="kimjungminn24"></label>
-        <label>Repository<input name="ghRepo" value="${esc(s.ghRepo)}" placeholder="interview-practice"></label>
+        <label>Repository<input name="ghRepo" value="${esc(s.ghRepo)}" placeholder="interview-data (private)"></label>
         <label>Branch<input name="ghBranch" value="${esc(s.ghBranch)}" placeholder="main"></label>
         <label>데이터 폴더<input name="dataDir" value="${esc(s.dataDir)}" placeholder="data"></label>
       </div>
@@ -63,7 +64,17 @@ export function render(el) {
     if (status.dirty && ghConfig() && !(await saveAll())) {
       if (!confirm('저장되지 않은 변경사항이 있어요. 그래도 다시 불러올까요?')) return;
     }
-    saveSettings(readGh());
+    const v = readGh();
+    if (v.ghToken.trim() && v.ghOwner.trim() && v.ghRepo.trim()) {
+      try {
+        const r = await testConnection({ owner: v.ghOwner.trim(), repo: v.ghRepo.trim(), branch: v.ghBranch.trim() || 'main', token: v.ghToken.trim() });
+        if (!r.private && !confirm(`${r.fullName}은 public 저장소라 경험과 답변이 누구나 볼 수 있게 저장돼요. 그래도 사용할까요?`)) return;
+      } catch (e) {
+        toast(`저장소 확인 실패: ${e.message}`, 'error', 6000);
+        return;
+      }
+    }
+    saveSettings(v);
     await withLoading(ghForm.querySelector('button.primary'), async () => {
       await load();
       toast(status.error ? status.error : '설정을 저장하고 데이터를 불러왔어요.', status.error ? 'error' : 'success');
@@ -85,7 +96,9 @@ export function render(el) {
         const cfg = { owner: v.ghOwner.trim(), repo: v.ghRepo.trim(), branch: v.ghBranch.trim() || 'main', token: v.ghToken.trim() };
         if (!cfg.owner || !cfg.repo || !cfg.token) return toast('Owner, Repository, Token을 입력하세요.', 'error');
         const r = await withLoading(b, () => testConnection(cfg), '확인 중…');
-        if (r) toast(r.canPush ? `✅ ${r.fullName} (${cfg.branch}) 쓰기 가능` : `⚠️ ${r.fullName} 읽기만 가능 — 토큰 권한을 확인하세요.`, r.canPush ? 'success' : 'error', 5000);
+        if (!r) return;
+        if (!r.private) return toast(`⚠️ ${r.fullName}은 public 저장소예요. 경험과 답변이 공개됩니다! private 저장소를 쓰세요.`, 'error', 7000);
+        toast(r.canPush ? `✅ ${r.fullName} (private, ${cfg.branch}) 쓰기 가능` : `⚠️ ${r.fullName} 읽기만 가능 — 토큰 권한을 확인하세요.`, r.canPush ? 'success' : 'error', 5000);
         return;
       }
       case 'export': {
