@@ -1,0 +1,12 @@
+[
+  { "id": "q-sample1", "text": "1분 자기소개 해주세요.", "type": "personality", "category": "자기소개/지원동기", "experienceIds": ["exp-sample1"], "followUps": [], "answer": "", "source": "manual", "createdAt": "2026-01-01T00:00:00.000Z", "updatedAt": "2026-01-01T00:00:00.000Z" },
+  { "id": "q-sample2", "text": "팀원과 갈등이 있었던 경험과 해결 방법을 말해주세요.", "type": "personality", "category": "협업/갈등", "experienceIds": ["exp-sample2"], "followUps": [], "answer": "", "source": "manual", "createdAt": "2026-01-01T00:00:00.000Z", "updatedAt": "2026-01-01T00:00:00.000Z" },
+  { "id": "q-sample3", "text": "실패했던 경험과 그 경험에서 배운 점은 무엇인가요?", "type": "personality", "category": "실패/극복", "experienceIds": [], "followUps": [], "answer": "", "source": "manual", "createdAt": "2026-01-01T00:00:00.000Z", "updatedAt": "2026-01-01T00:00:00.000Z" },
+  { "id": "q-sample4", "text": "프로젝트에서 성능을 개선했던 경험을 설명해주세요.", "type": "job", "category": "성능/최적화", "experienceIds": ["exp-sample1"], "followUps": [
+    { "id": "fu-sample1", "text": "병목 지점이 N+1 쿼리라는 것을 어떻게 확인했나요?", "intent": "문제 분석 방법", "answer": "" },
+    { "id": "fu-sample2", "text": "캐시 데이터와 DB 데이터의 정합성은 어떻게 보장했나요?", "intent": "캐시 일관성 이해도", "answer": "" }
+  ], "answer": "", "source": "manual", "createdAt": "2026-01-01T00:00:00.000Z", "updatedAt": "2026-01-01T00:00:00.000Z" },
+  { "id": "q-sample5", "text": "Redis를 캐시로 선택한 이유와 다른 대안은 무엇이 있었나요?", "type": "job", "category": "설계/아키텍처", "experienceIds": ["exp-sample1"], "followUps": [], "answer": "", "parentId": "q-sample4", "source": "manual", "createdAt": "2026-01-01T00:00:00.000Z", "updatedAt": "2026-01-01T00:00:00.000Z" },
+  { "id": "q-sample6", "text": "JPA에서 N+1 문제가 발생하는 원인과 해결 방법을 설명해주세요.", "type": "job", "category": "기술 기본기", "experienceIds": [], "followUps": [], "answer": "", "source": "manual", "createdAt": "2026-01-01T00:00:00.000Z", "updatedAt": "2026-01-01T00:00:00.000Z" },
+  { "id": "q-sample7", "text": "프로세스와 스레드의 차이는 무엇인가요?", "type": "job", "category": "CS", "experienceIds": [], "followUps": [], "answer": "", "source": "manual", "createdAt": "2026-01-01T00:00:00.000Z", "updatedAt": "2026-01-01T00:00:00.000Z" }
+]
