@@ -367,7 +367,7 @@ export function openPractice(id, onChange) {
       </div>
       ${
         p.gaps?.length
-          ? `<div class="muted small"><span class="lbl-sm">경험 카드에 없는 정보</span><ul>${p.gaps.map((g) => `<li>${esc(g)}</li>`).join('')}</ul></div>`
+          ? `<div class="muted small"><span class="lbl-sm">확인할 것</span><ul>${p.gaps.map((g) => `<li>${esc(g)}</li>`).join('')}</ul></div>`
           : ''
       }
       <details class="box" id="prep-scripts" ${scriptsOpen || p.spoken || p.short30 ? 'open' : ''}>
