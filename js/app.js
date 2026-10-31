@@ -60,7 +60,7 @@ function renderSync() {
     label = '저장 실패';
     cls = 'err';
   } else if (status.dirty) {
-    label = gh ? '저장 전' : '저장 전 (로컬)';
+    label = gh ? '저장 안 됨' : '이 기기에만 저장됨';
     cls = 'dirty';
   } else if (gh) {
     label = status.lastSaved ? `저장됨 ${hhmm(status.lastSaved)}` : '저장됨';
@@ -76,7 +76,7 @@ function renderSync() {
         ? status.dirty || status.error
           ? `<button class="btn sm" id="save-btn" ${status.saving ? 'disabled' : ''}>저장</button>`
           : ''
-        : `<a class="btn sm ghost" href="#/settings">연결</a>`
+        : `<a class="btn sm ghost" href="#/settings">GitHub 연결</a>`
     }`;
   el.querySelector('#save-btn')?.addEventListener('click', async () => {
     const ok = await saveAll();
@@ -99,7 +99,7 @@ window.addEventListener('hashchange', route);
   const { restored } = await load();
   if (status.error) toast(`불러오기 실패: ${status.error}`, 'error', 6000);
   // 로컬 모드에서는 캐시가 곧 저장소라 매번 '되살렸다'고 알릴 필요가 없다
-  if (restored && ghConfig()) toast('저장 전이던 내용을 되살렸습니다.', 'info', 4000);
+  if (restored && ghConfig()) toast('저장하지 못했던 내용을 다시 불러왔습니다.', 'info', 4000);
   try {
     speak.flushPending();
   } catch (e) {

@@ -11,11 +11,11 @@ export function render(el) {
   el.innerHTML = `
     <div class="page-head">
       <h2>경험 <span class="muted">${state.experiences.length}</span></h2>
-      <p class="muted">면접에서 꺼낼 경험을 상황·과제·행동·결과 순서로 적어 둡니다.</p>
+      <p class="muted">면접에서 꺼내 쓸 경험을 상황, 과제, 행동, 결과 순서로 정리해 두세요.</p>
     </div>
     <div class="toolbar">
       <input type="search" id="e-search" placeholder="경험 검색" aria-label="경험 검색" value="${esc(f.q)}">
-      <button class="btn primary" data-action="new">경험 적기</button>
+      <button class="btn primary" data-action="new">경험 추가</button>
     </div>
     ${
       tags.length
@@ -77,10 +77,10 @@ function renderList() {
       <div class="card exp-card" data-id="${e.id}">
         <div class="card-body" data-action="detail">
           <h3>${esc(e.title)}</h3>
-          <div class="muted small">${[e.period, e.role].filter(Boolean).map(esc).join(' · ')}</div>
+          <div class="muted small">${[e.period, e.role].filter(Boolean).map(esc).join(', ')}</div>
           ${tagsHtml(e.tags)}
           ${e.result ? `<p class="clamp"><b>결과</b> ${esc(e.result)}</p>` : ''}
-          <div class="muted small">연결된 질문 ${qs.length} (직무 ${job} · 인성 ${qs.length - job})</div>
+          <div class="muted small">연결된 질문 ${qs.length} (직무 ${job}, 인성 ${qs.length - job})</div>
         </div>
         <div class="card-actions">
           <button class="btn sm" data-action="gen">질문 뽑기</button>
@@ -92,7 +92,7 @@ function renderList() {
         .join('')
     : state.experiences.length
       ? '<p class="empty">조건에 맞는 경험이 없습니다.</p>'
-      : '<div class="empty"><p>아직 적어 둔 경험이 없습니다.</p><button class="btn ghost" data-action="new">경험 적기</button></div>';
+      : '<div class="empty"><p>아직 적어 둔 경험이 없습니다.</p><button class="btn ghost" data-action="new">경험 추가</button></div>';
 }
 
 function openDetail(id) {

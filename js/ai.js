@@ -74,6 +74,8 @@ function system() {
     '모든 답변은 한국어로, 요청한 JSON 형식으로만 응답하세요.',
     '생각할 시간을 요청하거나, 모르는 것을 솔직히 인정하고 추론하는 것은 감점하지 말고 긍정적으로 평가하세요.',
     '보완점은 최대 3개, 그중 효과가 가장 큰 하나를 oneFix로 고르세요.',
+    '문장은 실제 사람이 쓰는 자연스러운 한국어로 짧게 쓰세요. 번역투(~하는 것이 중요합니다, ~에 있어서, ~를 통해), 과장된 칭찬, 느낌표는 쓰지 마세요.',
+    '중간점(·), 대시(—, –), 화살표(→), 이모지, 마크다운 기호(**, #)는 쓰지 말고 쉼표와 문장으로 풀어 쓰세요.',
   ]
     .filter(Boolean)
     .join('\n');
@@ -162,7 +164,7 @@ export async function generateFollowUps({ question, answer, experiences, count =
 [질문] ${question.text}
 
 [지원자 답변]
-${answer || '(아직 답변 없음 — 경험 카드를 근거로 예상 꼬리질문 생성)'}
+${answer || '(아직 답변 없음. 경험 카드를 근거로 예상 꼬리질문 생성)'}
 
 [관련 경험]
 ${expBlock(experiences)}
@@ -280,14 +282,14 @@ export async function buildPrep({ question, kind = 'experience', experiences, an
 [카테고리] ${question.category || '-'}
 [의도] ${question.intent || '-'}
 [질문] ${question.text}
-[유형 추정] ${kind} — 맞지 않으면 바꿔도 됨
+[유형 추정] ${kind} (맞지 않으면 바꿔도 됨)
 [목표 길이] 약 ${targetSec}초
 [박자 템플릿] ${BEAT_GUIDE}
 [지원자 답변(있으면 내용을 살려 다듬기)] ${answer || '(없음)'}
 [경험 카드]
 ${expBlock(experiences)}
 규칙:
-- 경험 카드와 답변에 있는 사실만 사용. 없는 수치·기술은 지어내지 말고 "[수치 필요]"로 쓰고 gaps에 기록.
+- 경험 카드와 답변에 있는 사실만 사용. 없는 수치나 기술은 지어내지 말고 "[수치 필요]"로 쓰고 gaps에 기록.
 - 말로 하는 문장: 합쇼체, 한 문장 40음절 이하, 한 문장에 정보 하나. "~함에 있어", "~를 통해", "~하였으며", "~의 경우" 금지. "것 같습니다" 쓰지 않기.
 - 첫 문장에 결론(두괄식). opener는 그 첫 문장.
 - cues는 3~5개, 각 10자 이내 명사/숫자. 문장 금지.
@@ -371,7 +373,7 @@ export function metricsLine(m = {}, targetSec) {
   if (m.longSent != null && m.longSent > 0) parts.push(`긴 문장 ${m.longSent}`);
   if (m.restarts) parts.push(`말 다시 시작 ${m.restarts}회`);
   if (m.cueTotal) parts.push(`키워드 ${m.cueHits}/${m.cueTotal}`);
-  return parts.join(' · ');
+  return parts.join(', ');
 }
 
 /** 말하기 시도 첨삭 */

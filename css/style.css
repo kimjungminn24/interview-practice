@@ -1,5 +1,5 @@
 /* =====================================================================
-   면접 연습장 — 연습장(종이 노트) 스타일
+   면접 연습장: 종이 노트 스타일
    종이 바탕, 먹색 글자, 교정 펜 주홍 하나, 그림자 대신 가는 선.
    ===================================================================== */
 
@@ -311,7 +311,7 @@ button.chip { cursor: pointer; }
 button.chip:hover { border-color: var(--rule-strong); }
 .chip.on { background: var(--ink); border-color: var(--ink); color: var(--sheet); }
 
-/* kind marker (직무 / 인성) — text with a short bar, no fill */
+/* kind marker (직무 / 인성): text with a short bar, no fill */
 .badge {
   display: inline-flex; align-items: center; gap: 6px;
   font-size: var(--fs-xs); line-height: 1.4; font-weight: 600; letter-spacing: .02em;
@@ -856,7 +856,7 @@ p.empty { margin: var(--s-2) 0; }
   body.is-interviewing .tabbar { display: none; }
 
   .container { padding: var(--s-5) var(--gutter) calc(var(--tabbar-h) + 24px + env(safe-area-inset-bottom)); }
-  /* 탭 바가 숨으면 홈 표시줄만큼 띄운다. 아래에 붙는 조작부(.action-bar · .rec-area)가 있으면 그쪽이 여백을 갖는다. */
+  /* 탭 바가 숨으면 홈 표시줄만큼 띄운다. 아래에 붙는 조작부(.action-bar, .rec-area)가 있으면 그쪽이 여백을 갖는다. */
   body.is-interviewing .container { padding-bottom: calc(24px + env(safe-area-inset-bottom)); }
   body.is-interviewing .container:has(.action-bar, .stage > .rec-area) { padding-bottom: 0; }
   .page-head { margin-bottom: var(--s-4); }
@@ -902,7 +902,7 @@ p.empty { margin: var(--s-2) 0; }
 
   /* question list */
   .q-list { margin: 0 calc(-1 * var(--gutter)); border-radius: 0; border-left: 0; border-right: 0; }
-  /* 줄 전체가 '연습' 버튼. 오른쪽 아래에 말하기 · 더보기만 작게 */
+  /* 줄 전체가 '연습' 버튼. 오른쪽 아래에 말하기, 더보기만 작게 */
   .q-row {
     display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: var(--s-2); row-gap: 2px; align-items: center;
     padding: 12px 8px 4px 22px;
@@ -936,7 +936,7 @@ p.empty { margin: var(--s-2) 0; }
   .stage-controls .seg { display: flex; }
   .stage-controls .seg button { flex: 1; padding: 0 8px; }
 
-  /* 녹음 조작부: 화면 아래에 붙는다 (준비 중에는 탭 바 위, 생각·녹음 중에는 맨 아래) */
+  /* 녹음 조작부: 화면 아래에 붙는다 (준비 중에는 탭 바 위, 생각, 녹음 중에는 맨 아래) */
   .stage > .rec-area {
     position: sticky; z-index: 10;
     bottom: calc(var(--tabbar-h) + env(safe-area-inset-bottom));

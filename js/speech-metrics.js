@@ -88,18 +88,18 @@ export function firstSentence(text) {
   return splitSentences(text)[0] || '';
 }
 
-/** 원고 단계 1: 낱말마다 첫 음절만 보이고 나머지 한글은 · 로 가린다 */
+/** 원고 단계 1: 낱말마다 첫 음절만 보이고 나머지 한글은, 로 가린다 */
 export function firstSyllables(text) {
   return String(text || '').replace(/\S+/g, (tok) => {
     const m = tok.match(/^([가-힣]+)(.*)$/s);
     if (!m) return tok;
-    return m[1][0] + '·'.repeat(m[1].length - 1) + m[2];
+    return m[1][0] + '○'.repeat(m[1].length - 1) + m[2];
   });
 }
 
 const norm = (s) => String(s || '').toLowerCase().replace(/\s+/g, '');
 
-/** {hits, total, missing[]} — 대소문자/공백 무시 부분 문자열 */
+/** {hits, total, missing[]}: 대소문자/공백 무시 부분 문자열 */
 export function cueCoverage(text, cues) {
   const t = norm(text);
   const list = (cues || []).filter((c) => norm(c));
@@ -159,10 +159,10 @@ export function verdicts(m, targetSec = 60) {
 
   // 길이
   const sec = voice ? m.durMs / 1000 : m.estSec;
-  if (!voice && !m.hasText) row('len', '길이', '—', null, `목표 ${fmtSec(targetSec)}`);
+  if (!voice && !m.hasText) row('len', '길이', '없음', null, `목표 ${fmtSec(targetSec)}`);
   else {
     const v = sec < targetSec * 0.5 ? ['warn', '짧음'] : sec > targetSec * 1.5 ? ['warn', '김'] : ['ok', '적정'];
-    row('len', '길이', `${voice ? '' : '약 '}${fmtSec(sec)}`, v[0], `${v[1]} · 목표 ${fmtSec(targetSec)}${voice ? '' : ' · 글자 수로 추정'}`);
+    row('len', '길이', `${voice ? '' : '약 '}${fmtSec(sec)}`, v[0], `${v[1]}, 목표 ${fmtSec(targetSec)}${voice ? '' : ' (글자 수로 추정)'}`);
   }
 
   // 첫마디
@@ -174,30 +174,30 @@ export function verdicts(m, targetSec = 60) {
 
   // 긴 멈춤
   if (m.pauses != null) {
-    row('pauses', '긴 멈춤', `${m.pauses}회${m.longestPauseMs ? ` · 최장 ${sec1(m.longestPauseMs)}` : ''}`, m.pauses > 3 ? 'warn' : 'ok', '1.5초 이상');
+    row('pauses', '긴 멈춤', `${m.pauses}회${m.longestPauseMs ? `, 가장 길게 ${sec1(m.longestPauseMs)}` : ''}`, m.pauses > 3 ? 'warn' : 'ok', '1.5초 넘게 멈춘 횟수');
   }
 
   // 말 속도
   if (voice) {
-    if (m.spm == null) row('spm', '말 속도', '—', null, '받아쓰기 후 계산');
+    if (m.spm == null) row('spm', '말 속도', '없음', null, '받아쓰기를 하면 계산합니다');
     else {
       const v = m.spm < 210 ? ['warn', '느림'] : m.spm > 330 ? ['warn', '빠름'] : ['ok', '적정'];
       row('spm', '말 속도', `${m.spm}음절/분`, v[0], v[1]);
     }
   }
 
-  const fillerNote = "참고용 · 받아쓰기가 '음/어'를 빠뜨릴 수 있음";
+  const fillerNote = "받아쓰기에서 '음', '어'가 빠질 수 있어 참고만 하세요";
   if (m.hasText) {
     const detail = topFillers(m.fillers);
     if (m.fillersPerMin != null) {
-      row('fillers', '군말/분', `${m.fillersPerMin}${detail ? ` (${detail})` : ''}`, m.fillersPerMin > 6 ? 'warn' : 'ok', fillerNote);
+      row('fillers', '분당 군말', `${m.fillersPerMin}${detail ? ` (${detail})` : ''}`, m.fillersPerMin > 6 ? 'warn' : 'ok', fillerNote);
     } else {
       row('fillers', '군말', `${m.fillerTotal || 0}회${detail ? ` (${detail})` : ''}`, null, fillerNote);
     }
     row('hedges', '것 같다', `${m.hedges}회`, m.hedges > 2 ? 'warn' : 'ok');
-    row('longSent', '긴 문장', `${m.longSent}`, m.longSent > 0 ? 'warn' : 'ok', '80음절 넘는 문장');
+    row('longSent', '긴 문장', `${m.longSent}`, m.longSent > 0 ? 'warn' : 'ok', '80음절이 넘는 문장');
   } else if (voice) {
-    row('fillers', '군말/분', '—', null, '받아쓰기 후 계산');
+    row('fillers', '분당 군말', '없음', null, '받아쓰기를 하면 계산합니다');
   }
 
   if (m.cueTotal) {
@@ -206,7 +206,7 @@ export function verdicts(m, targetSec = 60) {
 
   if (m.hasText) {
     const long = m.firstSentSyl > 60;
-    row('firstSent', '첫 문장', `${m.firstSentSyl}음절`, long ? 'warn' : 'ok', long ? '첫 문장이 깁니다' : '');
+    row('firstSent', '첫 문장', `${m.firstSentSyl}음절`, long ? 'warn' : 'ok', long ? '첫 문장이 깁니다. 결론부터 짧게 말해 보세요' : '');
   }
   return rows;
 }

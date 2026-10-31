@@ -19,15 +19,15 @@ export const BEAT_PLACEHOLDER = {
   상황: '언제, 어떤 문제가 있었는지',
   행동: '내가 직접 한 일',
   결과: '바뀐 점, 수치',
-  연결: '이 경험이 지원 직무에 닿는 지점',
+  연결: '지원 직무와 어떻게 이어지는지',
   정의: '한 문장으로 정의',
   핵심: '동작 원리나 핵심 차이',
-  예시: '써 본 사례나 예',
+  예시: '직접 써 본 경험이나 예시',
   한계: '단점, 주의할 점',
   주장: '내 생각 한 문장',
-  이유: '그렇게 생각하는 까닭',
+  이유: '그렇게 생각하는 이유',
   사례: '뒷받침하는 경험',
-  마무리: '다시 한 번 정리',
+  마무리: '한 문장으로 다시 정리',
   '한 줄 소개': '어떤 개발자인지 한 문장',
   '근거 1': '그렇게 말할 수 있는 경험',
   '근거 2': '다른 경험이나 강점',
@@ -204,13 +204,13 @@ export const DEFAULT_PHRASES = [
   { id: 'p-open-1', situation: '시작', text: '결론부터 말씀드리면, ~입니다.' },
   { id: 'p-open-2', situation: '시작', text: '두 가지로 나눠 말씀드리겠습니다. 첫째는 ~' },
   { id: 'p-think-1', situation: '생각 정리', text: '잠시 생각을 정리하고 말씀드려도 될까요?' },
-  { id: 'p-think-2', situation: '생각 정리', text: '좋은 질문입니다. 10초만 정리하겠습니다.' },
-  { id: 'p-clar-1', situation: '질문 확인', text: '질문을 제가 이해한 대로 말씀드리면 ~라는 말씀이 맞을까요?' },
+  { id: 'p-think-2', situation: '생각 정리', text: '잠시만 생각해 보고 말씀드리겠습니다.' },
+  { id: 'p-clar-1', situation: '질문 확인', text: '~에 대해 여쭤보신 게 맞을까요?' },
   { id: 'p-clar-2', situation: '질문 확인', text: '~ 관점에서 답변드려도 될까요?' },
   { id: 'p-bridge-1', situation: '연결', text: '그 이유는 ~ 때문입니다.' },
   { id: 'p-bridge-2', situation: '연결', text: '구체적인 예를 들면, ~' },
   { id: 'p-bridge-3', situation: '연결', text: '그 결과 ~' },
-  { id: 'p-idk-1', situation: '모를 때', text: '정확히는 모르지만, 제가 아는 ~를 바탕으로 추론해 보면 ~' },
+  { id: 'p-idk-1', situation: '모를 때', text: '정확히는 모르지만, 아는 범위에서 말씀드리면 ~' },
   { id: 'p-idk-2', situation: '모를 때', text: '그 부분은 직접 경험해 보지 못했습니다. 다만 비슷한 상황에서는 ~' },
   { id: 'p-idk-3', situation: '모를 때', text: '정확한 수치는 기억나지 않지만, 대략 ~ 정도였습니다.' },
   { id: 'p-wrap-1', situation: '정리', text: '정리하면, 핵심은 ~입니다.' },
@@ -261,7 +261,7 @@ export function buildHint(step, { q, turn, exps = [], phrases = [] } = {}) {
     return {
       step,
       title,
-      html: `${p ? `<p class="phrase">${esc(p.text)}</p>` : ''}${intent ? `<p class="muted">묻는 이유 · ${esc(intent)}</p>` : ''}`,
+      html: `${p ? `<p class="phrase">${esc(p.text)}</p>` : ''}${intent ? `<p class="muted">질문 의도: ${esc(intent)}</p>` : ''}`,
     };
   }
   if (step === 2) {
@@ -281,7 +281,7 @@ export function buildHint(step, { q, turn, exps = [], phrases = [] } = {}) {
     return {
       step,
       title,
-      html: `${opener ? `<p>${esc(opener)}</p>` : ''}${conclusion && conclusion !== opener ? `<p class="muted">결론 · ${esc(conclusion)}</p>` : ''}`,
+      html: `${opener ? `<p>${esc(opener)}</p>` : ''}${conclusion && conclusion !== opener ? `<p class="muted">결론: ${esc(conclusion)}</p>` : ''}`,
     };
   }
   return { step, title, html: '' };
@@ -294,7 +294,7 @@ export function hintFromAi(step, r = {}) {
   if (step === 3) return { step, title, html: cues.length ? chipsHtml(cues) : '<p class="muted">준비된 키워드가 없습니다.</p>' };
   const parts = [];
   if (r.opener) parts.push(`<p>${esc(r.opener)}</p>`);
-  if (r.conclusion) parts.push(`<p class="muted">결론 · ${esc(r.conclusion)}</p>`);
+  if (r.conclusion) parts.push(`<p class="muted">결론: ${esc(r.conclusion)}</p>`);
   if (cues.length) parts.push(chipsHtml(cues));
   return { step, title, html: parts.join('') || '<p>결론부터 말씀드리면, ~</p>' };
 }
@@ -302,7 +302,7 @@ export function hintFromAi(step, r = {}) {
 /** 힌트 하나를 .hint-step 마크업으로 */
 export function hintStepHtml(h) {
   if (!h) return '';
-  return `<div class="hint-step" data-step="${h.step}"><span class="lbl-sm">${h.step} · ${esc(h.title)}</span>${h.html ?? h.fallbackHtml ?? ''}</div>`;
+  return `<div class="hint-step" data-step="${h.step}"><span class="lbl-sm">${h.step}. ${esc(h.title)}</span>${h.html ?? h.fallbackHtml ?? ''}</div>`;
 }
 
 /** 결론 첫 낱말 + … (원고 단계 2, "결론 첫마디") */

@@ -29,7 +29,7 @@ const PRESETS = {
   real: { label: '실전', timer: 60, depth: 3, thinkSec: 5, order: 'weak', autoHint: false, gentle: false },
 };
 
-const ORDER_LABEL = { random: '무작위', review: '복습할 질문 먼저', weak: '약한 질문만', easy: '쉬운 질문 먼저' };
+const ORDER_LABEL = { random: '무작위', review: '복습할 질문 먼저', weak: '어려웠던 질문만', easy: '쉬운 질문 먼저' };
 
 const config = {
   preset: 'basic',
@@ -42,7 +42,7 @@ const config = {
   order: 'random',
   answerMode: 'text',
   tts: false,
-  hideScore: null, // null: 시작할 때 설정의 '점수 숨기기'를 따른다 (워밍업·실전 프리셋만 고정값)
+  hideScore: null, // null: 시작할 때 설정의 '점수 숨기기'를 따른다 (워밍업, 실전 프리셋만 고정값)
   autoHint: false,
   gentle: false,
 };
@@ -59,7 +59,7 @@ const kindOf = (q) => (KINDS.includes(q?.prep?.kind) ? q.prep.kind : inferKind(q
 /** 모의면접 화면이 지금 붙어 있는가. 비동기 응답이 늦게 오면 상태만 갱신하고 그리지 않는다. */
 const mounted = () => !!root?.isConnected;
 
-/** 프리셋에 고정값이 없으면(기본·직접 설정) 시작 시점의 설정값을 쓴다 */
+/** 프리셋에 고정값이 없으면(기본, 직접 설정) 시작 시점의 설정값을 쓴다 */
 function resolveHideScore(cfg) {
   if (cfg.preset === 'warmup') return true;
   if (cfg.preset === 'real') return false;
@@ -174,7 +174,7 @@ function applyPreset(key) {
 
 function poolLine() {
   const n = pool().length;
-  if (config.order === 'weak' && !n && basePool().length) return `출제 가능 0 · 어려움이나 보통으로 표시한 질문이 아직 없습니다.`;
+  if (config.order === 'weak' && !n && basePool().length) return `어렵다고 표시한 질문이 아직 없습니다.`;
   return `출제 가능 ${n}`;
 }
 
@@ -235,9 +235,9 @@ function renderSetup() {
           ${dictOk ? '' : '<p class="muted small">이 브라우저는 받아쓰기를 지원하지 않습니다.</p>'}
         </div>
         <label class="chk"><input type="checkbox" name="onlyLinked" ${config.onlyLinked ? 'checked' : ''}> 경험이 연결된 질문만</label>
-        ${tts.available ? `<label class="chk"><input type="checkbox" name="tts" ${config.tts ? 'checked' : ''}> 질문을 소리로 읽기</label>` : ''}
+        ${tts.available ? `<label class="chk"><input type="checkbox" name="tts" ${config.tts ? 'checked' : ''}> 질문을 소리 내어 읽어 주기</label>` : ''}
         <p class="muted small" id="m-pool">${esc(poolLine())}</p>
-        ${ai.aiReady() ? '' : '<p class="notice">API 키 없음: 저장해 둔 꼬리질문만 쓰고, 첨삭은 생략합니다.</p>'}
+        ${ai.aiReady() ? '' : '<p class="notice">API 키가 없어 저장해 둔 꼬리질문만 쓰고 첨삭은 하지 않습니다.</p>'}
         <div class="actions"><button class="btn primary" id="m-start">면접 시작</button></div>
       </form>
     </div>`;
@@ -336,7 +336,7 @@ function questionOf(item) {
   return byId('questions', item.questionId) || { id: item.questionId, text: item.question, type: item.type };
 }
 
-/** 힌트에 쓸 질문 객체: 꼬리질문이면 그 질문 기준으로 (본 질문의 첫 문장·답변은 쓰지 않는다) */
+/** 힌트에 쓸 질문 객체: 꼬리질문이면 그 질문 기준으로 (본 질문의 첫 문장, 답변은 쓰지 않는다) */
 function hintQuestion(item, turn) {
   const q = questionOf(item);
   if (item.turns.length <= 1) return q;
@@ -373,7 +373,7 @@ function startQuestion() {
   speakQuestion(q.text);
 }
 
-/** 새 질문이 나오면 맨 위(그만하기 · 진행 막대)부터 보이게 */
+/** 새 질문이 나오면 맨 위(그만하기, 진행 막대)부터 보이게 */
 function scrollTop() {
   if (mounted()) window.scrollTo(0, 0);
 }
@@ -445,7 +445,7 @@ function timerText() {
 }
 
 function micLabel(active) {
-  if (active) return `${icon('stop')} 멈추기 · ${fmtSec(Math.floor((Date.now() - dictStartedAt) / 1000))}`;
+  if (active) return `${icon('stop')} 멈추기 ${fmtSec(Math.floor((Date.now() - dictStartedAt) / 1000))}`;
   return `${icon('mic')} 말로<span class="mic-more"> 답하기</span>`;
 }
 
@@ -495,7 +495,7 @@ function renderInterview() {
       ${
         phase === 'answer'
           ? `<div class="answer-sheet">
-          <textarea id="m-answer" rows="7" placeholder="말하듯 적습니다. 키워드만 적어도 됩니다.">${esc(turn.a)}</textarea>
+          <textarea id="m-answer" rows="7" placeholder="말하듯이 적어 주세요. 키워드만 적어도 괜찮습니다.">${esc(turn.a)}</textarea>
         </div>`
           : ''
       }`;
@@ -512,8 +512,8 @@ function renderInterview() {
       </div>
       <div class="q-meta muted small">
         <span class="badge">${esc(KIND_LABEL[kindOf(q)] || typeLabel(item.type))}</span>
-        ${q.category ? ` · ${esc(q.category)}` : ''}
-        ${mock.config.depth ? ` · 꼬리 ${follows}/${mock.config.depth}` : ''}
+        ${q.category ? `, ${esc(q.category)}` : ''}
+        ${mock.config.depth ? `, 꼬리질문 ${follows}/${mock.config.depth}` : ''}
       </div>
       ${prev.length && !confirming ? `<details class="prev"><summary>앞선 문답 ${prev.length}</summary>${turnsHtml(prev)}</details>` : ''}
       ${stage}
@@ -738,9 +738,9 @@ function renderDone() {
   root.innerHTML = `
     <div class="page-head">
       <h2>모의면접 결과</h2>
-      <p class="muted">기록에 저장했습니다 · ${esc(fmtDate(s.startedAt))}</p>
+      <p class="muted">${esc(fmtDate(s.startedAt))} 기록에 저장했습니다.</p>
     </div>
-    ${ov?.oneFix ? `<p class="fb-one"><span class="lbl-sm">이번에 고칠 것 하나</span>${esc(ov.oneFix)}</p>` : ''}
+    ${ov?.oneFix ? `<p class="fb-one"><span class="lbl-sm">이번에 먼저 고칠 점</span>${esc(ov.oneFix)}</p>` : ''}
     ${ov ? `<div class="card pad"><h3>총평</h3>${feedbackHtml({ ...ov, oneFix: '' }, { hideScore })}</div>` : '<p class="notice">첨삭 없이 답변만 기록했습니다.</p>'}
     ${s.items
       .map((it, i) => {
@@ -749,7 +749,7 @@ function renderDone() {
         if (it.confidence) parts.push(CONF_LABEL[it.confidence] || '');
         return `
       <details class="card pad">
-        <summary><span class="clamp1">${parts.join(' · ')}</span></summary>
+        <summary><span class="clamp1">${parts.join(', ')}</span></summary>
         <div class="q-meta"><span class="badge ${esc(it.type)}">${typeLabel(it.type)}</span></div>
         ${turnsHtml(it.turns)}
         ${feedbackHtml(it.feedback, { hideScore })}

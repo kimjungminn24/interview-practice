@@ -15,7 +15,7 @@ export function experienceDetailHtml(e) {
     <article class="exp-detail">
       <header>
         <h4>${esc(e.title)}</h4>
-        <div class="muted small">${[e.period, e.role].filter(Boolean).map(esc).join(' · ')}</div>
+        <div class="muted small">${[e.period, e.role].filter(Boolean).map(esc).join(', ')}</div>
         ${tagsHtml(e.tags)}
       </header>
       ${row('S 상황', e.situation)}
@@ -31,7 +31,7 @@ export const tagsHtml = (tags) => (tags?.length ? `<div class="tags">${tags.map(
 export function openExperienceForm(exp, onSaved) {
   const e = exp || {};
   const body = openModal({
-    title: exp ? '경험 수정' : '경험 적기',
+    title: exp ? '경험 수정' : '경험 추가',
     wide: true,
     body: `
       <form class="form" id="exp-form">
@@ -41,10 +41,10 @@ export function openExperienceForm(exp, onSaved) {
           <label>역할/소속<input name="role" value="${esc(e.role)}" placeholder="백엔드 개발 (4인 팀 프로젝트)"></label>
         </div>
         <label>키워드 (쉼표로 구분)<input name="tags" value="${esc((e.tags || []).join(', '))}" placeholder="Spring, Redis, 캐싱, 협업"></label>
-        <label>S · 상황<textarea name="situation" rows="3" placeholder="언제, 어떤 상황이었는지">${esc(e.situation)}</textarea></label>
-        <label>T · 과제<textarea name="task" rows="2" placeholder="해결해야 했던 문제나 목표">${esc(e.task)}</textarea></label>
-        <label>A · 행동<textarea name="action" rows="4" placeholder="내가 구체적으로 한 일 (기술 선택 이유 포함)">${esc(e.action)}</textarea></label>
-        <label>R · 결과<textarea name="result" rows="3" placeholder="수치로 표현된 결과">${esc(e.result)}</textarea></label>
+        <label>상황 (S)<textarea name="situation" rows="3" placeholder="언제, 어떤 상황이었는지">${esc(e.situation)}</textarea></label>
+        <label>과제 (T)<textarea name="task" rows="2" placeholder="해결해야 했던 문제나 목표">${esc(e.task)}</textarea></label>
+        <label>행동 (A)<textarea name="action" rows="4" placeholder="내가 직접 한 일과 그렇게 한 이유">${esc(e.action)}</textarea></label>
+        <label>결과 (R)<textarea name="result" rows="3" placeholder="숫자로 보여 줄 수 있는 결과">${esc(e.result)}</textarea></label>
         <label>배운 점<textarea name="learned" rows="2">${esc(e.learned)}</textarea></label>
         <div class="actions"><button type="button" class="btn ghost" data-cancel>취소</button><button class="btn primary">저장</button></div>
       </form>`,
@@ -198,7 +198,7 @@ export function openLinkEditor(questionId, onDone) {
             </label>`
               )
               .join('')}</div>`
-          : '<p class="empty">경험이 없습니다. 경험을 먼저 적어 주세요.</p>'
+          : '<p class="empty">경험이 없습니다. 먼저 경험을 추가해 주세요.</p>'
       }
       <div class="actions"><button class="btn ghost" data-cancel>취소</button><button class="btn primary" data-save>저장</button></div>`,
   });
@@ -215,7 +215,7 @@ export function openLinkEditor(questionId, onDone) {
 export function openCardGenerator(expId, onDone) {
   const exp = byId('experiences', expId);
   const body = openModal({
-    title: `질문 뽑기 · ${exp.title}`,
+    title: `질문 뽑기: ${exp.title}`,
     wide: true,
     body: `
       <div class="form inline">
@@ -245,7 +245,7 @@ export function openCardGenerator(expId, onDone) {
         <label class="check-item">
           <input type="checkbox" data-i="${i}" ${exists.has(c.text.trim()) ? '' : 'checked'}>
           <span><span class="badge ${c.type}">${typeLabel(c.type)}</span> <span class="tag">${esc(c.category)}</span>${exists.has(c.text.trim()) ? ' <span class="tag">이미 있음</span>' : ''}<br>
-          <b>${esc(c.text)}</b><br><span class="muted small">묻는 이유 · ${esc(c.intent)}</span></span>
+          <b>${esc(c.text)}</b><br><span class="muted small">질문 의도: ${esc(c.intent)}</span></span>
         </label>`
         )
         .join('')}</div>

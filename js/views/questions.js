@@ -8,7 +8,7 @@ import { openQuestionForm, openLinkedView, openLinkEditor, categoryOptions, expe
 
 const f = { type: 'all', cat: '', q: '', unlinked: false, due: false, noprep: false };
 let root;
-let filtersOpen = false; // 휴대폰에서 필터(카테고리·체크박스) 펼침 여부
+let filtersOpen = false; // 휴대폰에서 필터(카테고리, 체크박스) 펼침 여부
 
 const MAX_CUES = 5;
 const CUE_MAX_LEN = 10;
@@ -171,11 +171,11 @@ function metaLine(q, practiced) {
   if (fu) segs.push(`꼬리 ${fu}`);
   if (practiced) segs.push(`연습 ${practiced}`);
   if (q.prep) segs.push('뼈대');
-  if (q.drill) segs.push(`단계 ${Math.min(3, Math.max(0, q.drill.level || 0)) + 1}/4`);
+  if (q.drill) segs.push(`${Math.min(3, Math.max(0, q.drill.level || 0)) + 1}/4단계`);
   const last = q.drill?.last;
   const dot = CONF_LABEL[last] ? `<span class="dot ${last}" title="최근: ${CONF_LABEL[last]}" role="img" aria-label="최근: ${CONF_LABEL[last]}"></span>` : '';
   const warn = n ? '' : '<span class="warn-text">경험 없음</span>';
-  const parts = [segs.length ? `<span>${segs.join(' · ')}</span>` : '', dot, warn].filter(Boolean);
+  const parts = [segs.length ? `<span>${segs.join(', ')}</span>` : '', dot, warn].filter(Boolean);
   return parts.length ? `<div class="q-sub muted small">${parts.join(' ')}</div>` : '';
 }
 
@@ -288,12 +288,12 @@ export function openPractice(id, onChange) {
     if (long) parts.push(`긴 문장 ${long}`);
     const fsSyl = countSyllables(firstSentence(text));
     if (fsSyl > 60) parts.push(`첫 문장 ${fsSyl}음절(깁니다)`);
-    return parts.join(' · ');
+    return parts.join(', ');
   };
   const scriptEstimate = (text) => (String(text || '').trim() ? `약 ${fmtSec(estimateSeconds(text))}` : '');
   const conclCounter = (text) => {
     const n = String(text || '').length;
-    return { cls: n >= 40 ? 'warn-text' : 'muted', label: `${n}자${n >= 40 ? ' · 깁니다' : ''}` };
+    return { cls: n >= 40 ? 'warn-text' : 'muted', label: `${n}자${n >= 40 ? ', 조금 깁니다' : ''}` };
   };
 
   // ----- 뼈대 편집 -----
@@ -304,12 +304,12 @@ export function openPractice(id, onChange) {
     if (!p) {
       return `
         <h4 class="sec-title">답변 뼈대</h4>
-        <p class="muted">결론 한 문장과 박자 3~4개를 정해 두면 외우지 않고 말할 수 있습니다.</p>
+        <p class="muted">결론 한 문장과 말할 순서 3~4개만 정해 두면 외우지 않아도 말이 이어집니다.</p>
         <div class="row">
           <button class="btn" data-p="prep-gen" ${genAttrs}>뼈대 만들기</button>
           <button class="btn" data-p="prep-template">빈 틀</button>
         </div>
-        ${ready ? '' : '<p class="muted small">API 키가 없으면 빈 틀에서 직접 채웁니다.</p>'}`;
+        ${ready ? '' : '<p class="muted small">API 키가 없으면 빈 틀을 직접 채워 주세요.</p>'}`;
     }
     const kind = kindOfQ(q);
     const cc = conclCounter(p.conclusion);
@@ -332,18 +332,18 @@ export function openPractice(id, onChange) {
             (b, i) => `
           <div class="beat" data-i="${i}">
             <div class="row">
-              <input class="beat-label" data-beat-label value="${esc(b.label)}" aria-label="박자 이름" placeholder="박자">
+              <input class="beat-label" data-beat-label value="${esc(b.label)}" aria-label="항목 이름" placeholder="항목">
               <span class="beat-tools">
                 <button type="button" class="icon-btn beat-up" data-p="beat-up" aria-label="위로" title="위로" ${i ? '' : 'disabled'}>${icon('chevron')}</button>
                 <button type="button" class="icon-btn" data-p="beat-down" aria-label="아래로" title="아래로" ${i < beats.length - 1 ? '' : 'disabled'}>${icon('chevron')}</button>
                 <button type="button" class="icon-btn beat-del" data-p="beat-del" aria-label="삭제" title="삭제">${icon('close')}</button>
               </span>
             </div>
-            <textarea data-beat-text rows="2" aria-label="${esc(b.label || '박자')} 내용" placeholder="${esc(BEAT_PLACEHOLDER[b.label] || '')}">${esc(b.text)}</textarea>
+            <textarea data-beat-text rows="2" aria-label="${esc(b.label || '항목')} 내용" placeholder="${esc(BEAT_PLACEHOLDER[b.label] || '')}">${esc(b.text)}</textarea>
           </div>`
           )
           .join('')}
-        <button type="button" class="btn ghost sm" data-p="beat-add">${icon('plus', { size: 16 })} 박자 추가</button>
+        <button type="button" class="btn ghost sm" data-p="beat-add">${icon('plus', { size: 16 })} 항목 추가</button>
       </div>
       <div class="form">
         <label for="prep-cue-input">키워드</label>
@@ -358,7 +358,7 @@ export function openPractice(id, onChange) {
         </div>
         ${
           cues.some((c) => [...String(c)].length > CUE_MAX_LEN)
-            ? '<p class="small warn-text" id="prep-cue-note">10자를 넘는 키워드가 있습니다. 짧게 줄이면 말할 때 보기 쉽습니다.</p>'
+            ? '<p class="small warn-text" id="prep-cue-note">10자가 넘는 키워드가 있습니다. 짧을수록 말하면서 보기 편합니다.</p>'
             : '<p class="muted small" id="prep-cue-note">3~5개, 각 10자 이내. Enter나 쉼표로 추가합니다.</p>'
         }
         <label>첫 문장
@@ -373,10 +373,10 @@ export function openPractice(id, onChange) {
       <details class="box" id="prep-scripts" ${scriptsOpen || p.spoken || p.short30 ? 'open' : ''}>
         <summary>말하기용 원고</summary>
         <label class="lbl" for="prep-spoken">1분</label>
-        <textarea id="prep-spoken" rows="7" placeholder="한 줄에 한 문장씩 적습니다.">${esc(p.spoken)}</textarea>
+        <textarea id="prep-spoken" rows="7" placeholder="한 줄에 한 문장씩 적어 주세요.">${esc(p.spoken)}</textarea>
         <p class="estimate" data-est="prep-spoken">${scriptEstimate(p.spoken)}</p>
         <label class="lbl" for="prep-short30">30초</label>
-        <textarea id="prep-short30" rows="4" placeholder="한 줄에 한 문장씩 적습니다.">${esc(p.short30)}</textarea>
+        <textarea id="prep-short30" rows="4" placeholder="한 줄에 한 문장씩 적어 주세요.">${esc(p.short30)}</textarea>
         <p class="estimate" data-est="prep-short30">${scriptEstimate(p.short30)}</p>
       </details>
       <div class="row">
@@ -474,7 +474,7 @@ export function openPractice(id, onChange) {
         <span class="badge ${q.type}">${typeLabel(q.type)}</span>
         <span class="tag" id="p-kind" title="답변 유형">${KIND_LABEL[kindOfQ(q)]}</span>
         ${q.category ? `<span class="tag">${esc(q.category)}</span>` : ''}
-        ${q.intent ? `<span class="muted small">묻는 이유 · ${esc(q.intent)}</span>` : ''}
+        ${q.intent ? `<span class="muted small">질문 의도: ${esc(q.intent)}</span>` : ''}
       </div>
 
       <details class="box" ${ex.length ? '' : 'open'}>
@@ -486,7 +486,7 @@ export function openPractice(id, onChange) {
       <section class="prep-editor" id="prep">${prepHtml()}</section>
 
       <label class="lbl" for="p-answer">내 답변</label>
-      <textarea id="p-answer" rows="7" placeholder="결론 한 문장 → 근거 → 결과 수치 순으로 적습니다.">${esc(q.answer)}</textarea>
+      <textarea id="p-answer" rows="7" placeholder="결론부터 쓰고, 근거와 결과 수치를 이어서 적어 주세요.">${esc(q.answer)}</textarea>
       <p class="estimate" id="p-estimate">${answerEstimate(q.answer)}</p>
       <div class="row">
         <button class="btn" data-p="save">저장</button>
@@ -503,7 +503,7 @@ export function openPractice(id, onChange) {
             (fu) => `
           <div class="fu" data-fu="${esc(fu.id)}">
             <div class="fu-head">
-              <div><b>Q.</b> ${esc(fu.text)}${fu.intent ? `<div class="muted small">묻는 이유 · ${esc(fu.intent)}</div>` : ''}</div>
+              <div><b>Q.</b> ${esc(fu.text)}${fu.intent ? `<div class="muted small">질문 의도: ${esc(fu.intent)}</div>` : ''}</div>
               <div class="fu-actions">
                 <button class="btn sm ghost" data-p="to-card" title="질문 리스트에 추가">질문으로 추가</button>
                 <button class="btn sm ghost danger" data-p="fu-del">삭제</button>
@@ -523,7 +523,7 @@ export function openPractice(id, onChange) {
               .map(
                 (h) => `
           <details class="box">
-            <summary>${fmtDate(h.date)} · ${esc(modeLabel(h.mode))}${h.feedback?.score != null && !hideScore ? ` · ${esc(h.feedback.score)} / 10` : ''}</summary>
+            <summary>${fmtDate(h.date)} ${esc(modeLabel(h.mode))}${h.feedback?.score != null && !hideScore ? `, ${esc(h.feedback.score)}점` : ''}</summary>
             ${(h.turns || [])
               .map((t, i) => `<div class="turn"><div class="tq">${i ? icon('follow', { size: 14 }) + ' ' : 'Q. '}${esc(t.q)}</div><div class="ta">${nl2br(t.a || '(무응답)')}</div></div>`)
               .join('')}
@@ -592,7 +592,7 @@ export function openPractice(id, onChange) {
           if (beatI < p.beats.length - 1) [p.beats[beatI + 1], p.beats[beatI]] = [p.beats[beatI], p.beats[beatI + 1]];
         });
       case 'beat-del':
-        if (q.prep?.beats?.[beatI]?.text?.trim() && !confirm('이 박자를 삭제할까요?')) return;
+        if (q.prep?.beats?.[beatI]?.text?.trim() && !confirm('이 항목을 삭제할까요?')) return;
         return editPrep((p) => p.beats.splice(beatI, 1));
       case 'beat-add':
         editPrep((p) => (p.beats ||= []).push({ label: '', text: '' }));

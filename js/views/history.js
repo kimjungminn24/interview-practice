@@ -23,7 +23,7 @@ function summaryLine(hideScore) {
       .slice(0, 10);
     if (recent.length) parts.push(`최근 ${recent.length}회 평균 <b>${(recent.reduce((a, b) => a + b, 0) / recent.length).toFixed(1)}</b> / 10`);
   }
-  return parts.join(' · ');
+  return parts.join(', ');
 }
 
 function attemptRow(a, i) {
@@ -33,11 +33,11 @@ function attemptRow(a, i) {
   if (a.durMs != null) parts.push(`길이 ${fmtSec(a.durMs / 1000)}`);
   else if (a.estSec != null) parts.push(`길이 약 ${fmtSec(a.estSec)}`);
   if (a.firstSpeechMs != null) parts.push(`첫마디 ${(a.firstSpeechMs / 1000).toFixed(1)}초`);
-  if (a.pauses != null) parts.push(`멈춤 ${a.pauses}`);
+  if (a.pauses != null) parts.push(`긴 멈춤 ${a.pauses}회`);
   if (a.spm != null) parts.push(`${a.spm}음절/분`);
   if (a.hintsUsed) parts.push(`힌트 ${a.hintsUsed}`);
   if (a.confidence && CONF_LABEL[a.confidence]) parts.push(CONF_LABEL[a.confidence]);
-  return `<li>${esc(parts.join(' · '))}</li>`;
+  return `<li>${esc(parts.join(', '))}</li>`;
 }
 
 function turnsHtml(turns) {
@@ -54,7 +54,7 @@ function itemHtml(s, it, i) {
   return `
     <div class="box">
       <div class="q-meta"><span class="badge ${esc(it.type)}">${typeLabel(it.type)}</span> <b>질문 ${i + 1}</b>
-        ${it.confidence && CONF_LABEL[it.confidence] ? ` · <span class="tag">${CONF_LABEL[it.confidence]}</span>` : ''}</div>
+        ${it.confidence && CONF_LABEL[it.confidence] ? ` <span class="tag">${CONF_LABEL[it.confidence]}</span>` : ''}</div>
       ${turnsHtml(it.turns)}
       ${attempts.length ? `<div class="attempts"><span class="lbl-sm">시도 ${attempts.length}</span><ul class="attempt-list">${attempts.map(attemptRow).join('')}</ul></div>` : ''}
       ${feedbackHtml(it.feedback)}

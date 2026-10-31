@@ -140,7 +140,7 @@ const STRUCT = [
   ['link', '연결'],
 ];
 
-/** 목록 칸 읽기: 배열이 아니라 문자열 하나만 저장된 예전·비정상 데이터도 목록으로 */
+/** 목록 칸 읽기: 배열이 아니라 문자열 하나만 저장된 예전, 비정상 데이터도 목록으로 */
 const asList = (x) =>
   (Array.isArray(x) ? x : x != null && x !== '' ? [x] : [])
     .map((v) => (v == null || typeof v === 'object' ? '' : String(v).trim()))
@@ -159,7 +159,7 @@ export function feedbackHtml(fb, { hideScore } = {}) {
   const structHtml = st
     ? `<div class="fb-struct">${STRUCT.map(
         ([k, label]) => `<span class="${st[k] ? 'ok' : 'miss'}">${icon(st[k] ? 'check' : 'dash', { size: 14 })} ${label}</span>`
-      ).join('')}${fb.firstSentenceIsConclusion === false ? '<span class="miss">첫 문장에 결론 없음</span>' : ''}</div>`
+      ).join('')}${fb.firstSentenceIsConclusion === false ? '<span class="miss">첫 문장에 결론이 없습니다</span>' : ''}</div>`
     : '';
   const d = fb.delivery && typeof fb.delivery === 'object' ? fb.delivery : null;
   const top = asList(d?.top);
@@ -173,7 +173,7 @@ export function feedbackHtml(fb, { hideScore } = {}) {
   return `
     <div class="feedback">
       <div class="fb-head"><span>첨삭</span>${hasScore ? `<span class="fb-score">${esc(score)} / 10</span>` : ''}</div>
-      ${oneFix ? `<p class="fb-one"><span class="lbl-sm">고칠 것 하나</span>${esc(oneFix)}</p>` : ''}
+      ${oneFix ? `<p class="fb-one"><span class="lbl-sm">먼저 고칠 점</span>${esc(oneFix)}</p>` : ''}
       ${structHtml}
       ${summary ? `<p>${nl2br(summary)}</p>` : ''}
       ${
@@ -181,9 +181,9 @@ export function feedbackHtml(fb, { hideScore } = {}) {
           ? `<div class="fb-sec"><h5>말하기 습관</h5>${list(top)}${drill ? `<p class="fb-drill"><span class="lbl-sm">다음 시도</span>${esc(drill)}</p>` : ''}</div>`
           : ''
       }
-      ${strengths.length ? `<div class="fb-sec good"><h5>잘 된 부분</h5>${list(strengths)}</div>` : ''}
-      ${improvements.length ? `<div class="fb-sec bad"><h5>고칠 부분</h5>${list(improvements)}</div>` : ''}
+      ${strengths.length ? `<div class="fb-sec good"><h5>좋았던 점</h5>${list(strengths)}</div>` : ''}
+      ${improvements.length ? `<div class="fb-sec bad"><h5>아쉬운 점</h5>${list(improvements)}</div>` : ''}
       ${opener ? `<p><span class="lbl-sm">첫 문장 예시</span>${esc(opener)}</p>` : ''}
-      ${better ? `<details class="fb-sec"><summary>다듬은 답변 보기</summary><p>${nl2br(better)}</p></details>` : ''}
+      ${better ? `<details class="fb-sec"><summary>다듬은 답변</summary><p>${nl2br(better)}</p></details>` : ''}
     </div>`;
 }

@@ -38,7 +38,7 @@ export function render(el) {
     </form>
 
     <form class="card pad form" id="s-ai">
-      <h3>OpenAI (꼬리질문 · 첨삭 · 받아쓰기)</h3>
+      <h3>OpenAI (꼬리질문, 첨삭, 받아쓰기)</h3>
       <p class="muted small">브라우저에서 OpenAI API를 직접 호출합니다. 사용량만큼 본인 계정에 과금됩니다.</p>
       <label>API Key<input name="aiKey" type="password" value="${esc(s.aiKey)}" placeholder="sk-..." autocomplete="off"></label>
       <div class="grid2">
@@ -46,7 +46,7 @@ export function render(el) {
         <label>API Base URL<input name="aiBaseUrl" value="${esc(s.aiBaseUrl)}" autocapitalize="off" spellcheck="false"></label>
       </div>
       <label>목표 직무<input name="targetRole" value="${esc(s.targetRole)}" placeholder="예) 신입 백엔드 개발자 (Java/Spring)"></label>
-      <label>채용공고 / JD (선택)<textarea name="jobDescription" rows="4" placeholder="자격요건·우대사항을 붙여 넣으면 질문이 그 공고에 맞춰집니다.">${esc(s.jobDescription)}</textarea></label>
+      <label>채용공고 / JD (선택)<textarea name="jobDescription" rows="4" placeholder="자격 요건과 우대 사항을 붙여 넣으면 그 공고에 맞춰 질문합니다.">${esc(s.jobDescription)}</textarea></label>
       <div class="actions"><button class="btn">저장</button></div>
     </form>
 
@@ -95,7 +95,7 @@ export function render(el) {
   ghForm.onsubmit = async (ev) => {
     ev.preventDefault();
     if (status.dirty && ghConfig() && !(await saveAll())) {
-      if (!confirm('저장 전인 변경이 있습니다. 그래도 다시 불러올까요?')) return;
+      if (!confirm('아직 저장하지 않은 변경이 있습니다. 그래도 다시 불러올까요?')) return;
     }
     const v = readGh();
     if (v.ghToken.trim() && v.ghOwner.trim() && v.ghRepo.trim()) {
@@ -150,7 +150,7 @@ export function render(el) {
         const r = await withLoading(b, () => testConnection(cfg), '확인 중');
         if (!r) return;
         if (!r.private) return toast(`${r.fullName}은 공개 저장소입니다. 답변이 누구에게나 보이니 비공개 저장소를 지정하세요.`, 'error', 7000);
-        if (r.canPush) toast(`연결 확인됨 · ${r.fullName} · 비공개 · ${cfg.branch}`, 'info', 5000);
+        if (r.canPush) toast(`${r.fullName} (${cfg.branch}) 비공개 저장소에 연결했습니다.`, 'info', 5000);
         else toast(`${r.fullName} 읽기만 가능합니다. 토큰 권한을 확인하세요.`, 'error', 5000);
         return;
       }
@@ -163,7 +163,7 @@ export function render(el) {
         return setTimeout(() => URL.revokeObjectURL(a.href), 1000);
       }
       case 'clear':
-        if (confirm('저장 전인 변경이 사라질 수 있습니다. 비울까요?')) {
+        if (confirm('저장하지 않은 변경이 사라질 수 있습니다. 비울까요?')) {
           clearCache();
           await load();
           toast('캐시를 비우고 다시 불러왔습니다.');

@@ -28,7 +28,7 @@ import { openPractice } from './questions.js';
 
 const PENDING_KEY = 'ip.speak.pending';
 const TARGETS = [30, 60, 90];
-const LEVEL_SEG = ['원고', '첫 글자', '키워드', '없이'];
+const LEVEL_SEG = ['원고', '첫 글자', '키워드', '질문만'];
 const NO_KEY_TITLE = '설정에서 API 키를 입력하면 쓸 수 있습니다';
 const CONSENT_MSG = '녹음을 OpenAI로 보내 받아쓰기합니다. 저장소에는 올라가지 않습니다. 계속할까요?';
 
@@ -48,7 +48,7 @@ let estTimer = null;
 let dict = null;
 let readingScript = false;
 let phraseOpen = false;
-let phraseEdit = false; // 멘트 목록의 숨기기·삭제 버튼은 '편집'을 눌렀을 때만 보인다
+let phraseEdit = false; // 멘트 목록의 숨기기, 삭제 버튼은 '편집'을 눌렀을 때만 보인다
 
 const qhref = (id) => `#/speak/${encodeURIComponent(id)}`;
 const Q = () => (drill ? byId('questions', drill.qid) : null);
@@ -136,12 +136,12 @@ export function flushPending() {
 // =====================================================================
 function queueRow(q) {
   const l = Math.min(3, Math.max(0, q.drill?.level || 0));
-  const last = CONF_LABEL[q.drill?.last] || '—';
+  const last = CONF_LABEL[q.drill?.last] || '없음';
   return `
     <a class="queue-row" href="${qhref(q.id)}">
       <span class="badge">${KIND_LABEL[kindOf(q)]}</span>
       <span class="q-text">${esc(q.text)}</span>
-      <span class="muted small">단계 ${l + 1}/4 · 최근 ${last} · 뼈대 ${q.prep ? '있음' : '없음'}</span>
+      <span class="muted small">${l + 1}/4단계, 최근 ${last}, 뼈대 ${q.prep ? '있음' : '없음'}</span>
     </a>`;
 }
 
@@ -157,7 +157,7 @@ function phraseBankHtml() {
       <h3>연결 멘트</h3>
       <button type="button" class="btn sm ghost" data-a="ph-edit" aria-pressed="${phraseEdit}">${phraseEdit ? '완료' : '편집'}</button>
     </div>
-    ${tts.available ? '<p class="muted small">누르면 소리로 들려줍니다.</p>' : ''}
+    ${tts.available ? '<p class="muted small">누르면 읽어 줍니다.</p>' : ''}
     ${groups
       .map(
         (g) => `
@@ -215,7 +215,7 @@ function renderQueue() {
         due.length
           ? `<div class="queue-list">${due.slice(0, 10).map(queueRow).join('')}</div>`
           : `<div class="empty"><p>오늘 복습할 질문이 없습니다.</p>${
-              state.questions.length ? '<button type="button" class="btn ghost" data-a="random">아무 질문이나</button>' : ''
+              state.questions.length ? '<button type="button" class="btn ghost" data-a="random">아무 질문 하나</button>' : ''
             }</div>`
       }
     </section>
@@ -307,7 +307,7 @@ function scriptLines(q) {
 
 function cueHtml(q) {
   const lv = drill.level;
-  if (lv === 3) return '<p class="muted">질문만 보고 답합니다.</p>';
+  if (lv === 3) return '<p class="muted">원고 없이 질문만 보고 답해 보세요.</p>';
   if (lv === 2) {
     const cues = q.prep?.cues?.length ? q.prep.cues : extractCues(q.answer, expsOf(q));
     const labels = (q.prep?.beats || []).map((b) => b.label).filter(Boolean);
@@ -328,7 +328,7 @@ function cueHtml(q) {
         <button type="button" class="btn sm ghost" data-a="open-practice">연습 화면에서 쓰기</button>
       </div>`;
   }
-  if (lv === 1) return `<div class="mask">${lines.map((l, i) => `<p data-i="${i}">${esc(firstSyllables(l)).replace(/·+/g, (m) => `<span class="mask-dot">${m}</span>`)}</p>`).join('')}</div>`;
+  if (lv === 1) return `<div class="mask">${lines.map((l, i) => `<p data-i="${i}">${esc(firstSyllables(l)).replace(/○+/g, (m) => `<span class="mask-dot">${m}</span>`)}</p>`).join('')}</div>`;
   const busy = drill.phase === 'rec' || drill.phase === 'think';
   return `
     <div class="cue-lines">${lines.map((l, i) => `<p data-i="${i}">${esc(l)}</p>`).join('')}</div>
@@ -393,7 +393,7 @@ function ledgerHtml() {
   // 녹음했는데 음량 측정이 목소리를 못 잡았으면 첫마디 칸을 비워 둔 채로 보여 준다
   if (m.durMs != null && !rows.some((r) => r.key === 'first')) {
     const i = rows.findIndex((r) => r.key === 'len');
-    rows.splice(i + 1, 0, { key: 'first', label: '첫마디', value: '—', verdict: null, note: drill.cur?.meterSummary ? '목소리를 잡지 못함' : '측정 안 됨' });
+    rows.splice(i + 1, 0, { key: 'first', label: '첫마디', value: '없음', verdict: null, note: drill.cur?.meterSummary ? '목소리가 잡히지 않았습니다' : '측정하지 못했습니다' });
   }
   return rows
     .map(
@@ -406,7 +406,7 @@ function ledgerHtml() {
 
 function estimateText(text) {
   const t = String(text || '').trim();
-  return `약 ${fmtSec(estimateSeconds(t))} 분량 · 목표 ${fmtSec(drill.target)}`;
+  return `약 ${fmtSec(estimateSeconds(t))} 분량, 목표 ${fmtSec(drill.target)}`;
 }
 
 function answerBox(label, placeholder) {
@@ -431,7 +431,7 @@ function voiceReadyHtml() {
     <div class="rec-area">
       <button type="button" id="rec-btn" class="rec-btn" aria-label="녹음 시작">${icon('mic', { size: 28 })}</button>
       <span class="rec-label">시작</span>
-      <p class="muted small">${sec > 0 && !drill.directNext ? `생각 시간 ${sec}초 후 녹음이 시작됩니다` : '누르면 바로 녹음합니다'}</p>
+      <p class="muted small">${sec > 0 && !drill.directNext ? `${sec}초 생각한 뒤 녹음이 시작됩니다` : '누르면 바로 녹음합니다'}</p>
     </div>`;
 }
 
@@ -472,16 +472,16 @@ function reviewHtml() {
       }
       ${
         voice
-          ? answerBox('받아쓴 답변', stt ? '받아쓰기를 누르거나 직접 적습니다.' : '받아쓰기를 쓰려면 설정에서 OpenAI 키를 입력하세요. 직접 적어도 됩니다.')
-          : answerBox('내 답변', '말하듯 적습니다. 키워드만 적어도 됩니다.')
+          ? answerBox('받아쓴 답변', stt ? '받아쓰기를 누르거나 직접 적어 주세요.' : '받아쓰기는 설정에서 OpenAI 키를 넣으면 쓸 수 있습니다. 직접 적어도 됩니다.')
+          : answerBox('내 답변', '말하듯이 적어 주세요. 키워드만 적어도 괜찮습니다.')
       }
       <div class="row-btns">
         ${voice && stt && c.blob ? '<button type="button" class="btn sm" id="s-transcribe">받아쓰기</button>' : ''}
         ${voice ? '' : textToolsHtml()}
       </div>
       <dl class="ledger" id="ledger">${ledgerHtml()}</dl>
-      <div class="conf-row" id="s-conf" role="group" aria-label="이번 시도는">
-        <span>이번 시도는</span>
+      <div class="conf-row" id="s-conf" role="group" aria-label="이번 시도 난이도">
+        <span>이번 시도는 어땠나요</span>
         ${CONF_KEYS.map((k) => `<button type="button" class="btn sm conf ${c.confidence === k ? 'on' : ''}" data-v="${k}" aria-pressed="${c.confidence === k}">${CONF_LABEL[k]}</button>`).join('')}
       </div>
       <div class="actions">
@@ -496,7 +496,7 @@ function reviewHtml() {
 function textReadyHtml() {
   return `
     <div class="text-sheet">
-      ${answerBox('내 답변', '말하듯 적습니다. 키워드만 적어도 됩니다.')}
+      ${answerBox('내 답변', '말하듯이 적어 주세요. 키워드만 적어도 괜찮습니다.')}
       <p class="estimate" id="s-est">${estimateText(drill.cur.text)}</p>
       <div class="actions">
         ${textToolsHtml()}
@@ -520,7 +520,7 @@ function draw() {
   const busy = drill.phase === 'rec' || drill.phase === 'think' || drill.phase === 'stopping';
   // 녹음 중에는 숨긴다: 끝내기 전에 '끝'으로 녹음을 마쳐야 이번 시도가 기록에 들어간다
   const showFinish = !busy && (n > 0 || (drill.phase === 'review' && curHasData()));
-  // 말로 하는 준비·생각·녹음 단계의 조작부는 .stage 바로 아래에 둔다 (휴대폰에서 화면 아래에 붙는다)
+  // 말로 하는 준비, 생각, 녹음 단계의 조작부는 .stage 바로 아래에 둔다 (휴대폰에서 화면 아래에 붙는다)
   const voiceCtl = drill.mode === 'voice' && drill.phase !== 'review';
   root.innerHTML = `
     <div class="stage">
@@ -1000,7 +1000,7 @@ function onSubmit(e) {
   const fd = new FormData(e.target);
   const item = addPhrase({ situation: fd.get('situation'), text: fd.get('text') });
   if (!item) {
-    toast('멘트를 적은 뒤 추가합니다.');
+    toast('멘트를 먼저 적어 주세요.');
     return;
   }
   redrawPhraseBank();
@@ -1167,7 +1167,7 @@ function useAnswer() {
     toast('반영할 답변이 없습니다.');
     return;
   }
-  if (q.answer?.trim() && q.answer.trim() !== text && !confirm('지금 답변으로 내 답변을 바꿀까요?')) return;
+  if (q.answer?.trim() && q.answer.trim() !== text && !confirm('저장해 둔 답변을 방금 답변으로 바꿀까요?')) return;
   q.answer = text;
   drill.useAnswer = true;
   toast('내 답변에 반영했습니다.');

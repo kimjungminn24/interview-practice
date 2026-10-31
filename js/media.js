@@ -20,7 +20,7 @@ const stopTracks = (s) => {
   } catch {}
 };
 
-/** 다시 쓸 수 있는 스트림인가: 살아 있고, (전화·Siri 등으로) 음소거되지 않은 오디오 트랙이 있어야 한다 */
+/** 다시 쓸 수 있는 스트림인가: 살아 있고, (전화, Siri 등으로) 음소거되지 않은 오디오 트랙이 있어야 한다 */
 const usable = (s) => !!s && s.getAudioTracks().some((t) => t.readyState === 'live' && !t.muted && t.enabled !== false);
 
 /** 마이크 스트림 (한 번 받아 재사용). 받는 도중 releaseMic()이 불리면 트랙을 끄고 실패로 끝난다. */
@@ -61,7 +61,7 @@ export async function getMicStream() {
 
 /**
  * 공유 AudioContext를 만들거나 깨운다. 탭 핸들러에서 await 전에 동기 호출할 것.
- * WebKit은 'suspended' 말고도 'interrupted'(권한 창·전화·백그라운드 뒤) 상태가 있어, running이 아니면 모두 깨운다.
+ * WebKit은 'suspended' 말고도 'interrupted'(권한 창, 전화, 백그라운드 뒤) 상태가 있어, running이 아니면 모두 깨운다.
  * 없으면 null.
  */
 export function primeAudio() {
@@ -108,7 +108,7 @@ export function extFor(mime) {
   return 'webm';
 }
 
-/** {start(), stop(): Promise<{blob, mime, durationMs}>, state} — start()는 timeslice 없이 */
+/** {start(), stop(): Promise<{blob, mime, durationMs}>, state}: start()는 timeslice 없이 */
 export function createRecorder(stream) {
   const picked = pickMime();
   const mr = picked ? new W.MediaRecorder(stream, { mimeType: picked }) : new W.MediaRecorder(stream);
@@ -164,7 +164,7 @@ function stubMeter() {
 /**
  * 50ms마다 RMS(dB)를 재고 onLevel(0..1)을 부른다. 생성 즉시 측정 시작.
  * summary() → {firstSpeechMs, speechMs, pauses, longestPauseMs, envelope, pauseSpans:[[startMs,endMs]]}
- * AudioContext가 한 번도 running이 아니었으면(측정 못 함) summary()는 null — 침묵으로 오해하지 않게.
+ * AudioContext가 한 번도 running이 아니었으면(측정 못 함) summary()는 null: 침묵으로 오해하지 않게.
  */
 export function createMeter(stream, onLevel = () => {}) {
   const ctx = primeAudio();
@@ -279,7 +279,7 @@ export function createMeter(stream, onLevel = () => {}) {
 // ---------- 받아쓰기 (Web Speech) ----------
 export const DICTATION_DENIED = '음성 인식을 쓸 수 없습니다. iPhone은 설정 > Siri 및 검색에서 받아쓰기를 켜야 합니다.';
 
-/** {start(), stop(), active} — onText(base + final + interim), onState(active, errorMessage?) */
+/** {start(), stop(), active}: onText(base + final + interim), onState(active, errorMessage?) */
 export function dictation({ onText = () => {}, onState = () => {}, base = '' } = {}) {
   const SR = W.webkitSpeechRecognition || W.SpeechRecognition;
   let rec = null;
